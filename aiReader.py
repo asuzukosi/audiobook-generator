@@ -11,7 +11,7 @@ import nltk
 from pydub import AudioSegment
 import re
 import inflect
-import threading
+import os
 
 set_seed(555)
 
@@ -107,34 +107,35 @@ def generateInputSequences(text, step_size=500):
 
 
 def speechGeneratorMicrosoft(text, fileName):
+    
     # generate list of input sequences from the text
     print("genrating input sequence")
     text = cleanText(text)
     inputs = generateInputSequences(text, 450)
     print("Done generating input sequences")
-    # output = torch.tensor([]).to(device)
+    
+    # create list to store concatenated output from individual inputs
+    output = torch.tensor([]).to(device)
     
     for data in inputs:
+        
         # generate endoding for the data
         data = data.strip()
         data += "."
-        data = data.replace("'", "") # remove  hyphens to make speaker more fluent for unfamiliar words
+        # remove  hyphens to make speaker more fluent for unfamiliar words
+        data = data.replace("'", "") 
         
+        # pass input sequence to processor
         input_sequence = processor(text=data, return_tensors="pt")
         # load xvector containing speaker's voice characteristics from a dataset
         embeddings_dataset = load_dataset("Matthijs/cmu-arctic-xvectors", split="validation")
         speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0).to(device)
-        def compute():
-            speech = model.generate_speech(input_sequence["input_ids"].to(device), speaker_embeddings, vocoder=vocoder)
-            del speech
-            # output = torch.cat([output, speech], axis=0)
-            print("Done")
-        threading.Thread(target=compute).start()
-        
-        
+        speech = model.generate_speech(input_sequence["input_ids"].to(device), speaker_embeddings, vocoder=vocoder)
+        output = torch.cat([output, speech], axis=0)
     
-    # output = output.cpu().numpy()
-    # print("Done with ", fileName)
+    output = output.cpu().numpy()
+    print("Done with ", fileName)
+    
     # del output
     # create temporary file path
     # filePath = f"{fileName}.mp3"
