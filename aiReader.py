@@ -11,7 +11,7 @@ import nltk
 from pydub import AudioSegment
 import re
 import inflect
-import os
+import threading
 
 set_seed(555)
 
@@ -124,8 +124,12 @@ def speechGeneratorMicrosoft(text, fileName):
         # load xvector containing speaker's voice characteristics from a dataset
         embeddings_dataset = load_dataset("Matthijs/cmu-arctic-xvectors", split="validation")
         speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0).to(device)
-        speech = model.generate_speech(input_sequence["input_ids"].to(device), speaker_embeddings, vocoder=vocoder)
-        output = torch.cat([output, speech], axis=0)
+        def compute():
+            speech = model.generate_speech(input_sequence["input_ids"].to(device), speaker_embeddings, vocoder=vocoder)
+            output = torch.cat([output, speech], axis=0)
+        threading.Thread(target=compute).start()
+        
+        
     
     # output = output.cpu().numpy()
     print("Done with ", fileName)
