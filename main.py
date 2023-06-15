@@ -30,16 +30,12 @@ def addBackground(audio, background):
 
 def ensureComplete(pageMap, lim):
     while True:
-        # should_break = True
-        print("The current limit is %d" % lim)
+        should_break = True
         for i in range(0, lim):
             if pageMap[i] == None:
-                print("batch should still be running")
-                break
-                # should_break = False
-        # if should_break:
-            
-        #     return
+                should_break = False
+        if should_break:
+            return
 
 def buildFullAudioFromPDF(file, output):
 	#Creating a PDF File Object
@@ -56,7 +52,7 @@ def buildFullAudioFromPDF(file, output):
 	# set all the values on the page mapper to false by default. 
 	# This means that they have not been parsed
 	for i in range(0, pages):
-		pageMap[i] = False
+		pageMap[i] = None
  
 	audio_sequences = np.array([])
 	step_size = 25
