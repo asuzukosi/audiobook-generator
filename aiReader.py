@@ -123,17 +123,21 @@ def speechGeneratorMicrosoft(text, fileName, pageMap):
     print("genrating input sequence")
     text = cleanText(text)
     inputs = generateInputSequences(text, 450)
-    print("Done generating input sequences")
     
     # create list to store concatenated output from individual inputs
     output = torch.tensor([]).to(device)
     # convert all the text data inputs to tensors using the processor and move them to the device
     inputs = [processDataAndReturnTensor(data) for data in inputs]
+    print("Done generating input sequences")
+    num_inputs = len(inputs)
     
-    for data in inputs:
+    print(f"Instance {fileName} has {num_inputs} inputs")
+    for id, data in enumerate(inputs):
         # pass input sequence to processor
+        print(f"Starting [{id}/{num_inputs}, {fileName}]")
         speech = model.generate_speech(data, speaker_embeddings, vocoder=vocoder)
         output = torch.cat([output, speech], axis=0)
+        print(f"Starting [{id}/{num_inputs}, {fileName}]")
     
     output = output.cpu().numpy()
     pageMap[fileName] = output
