@@ -45,7 +45,7 @@ def buildFullAudioFromPDF(file, output):
  
 	audio_sequences = []
 	with pdfplumber.open(file) as pdf:
-		for i in range(0, 10):
+		for i in range(0, 15):
 			page = pdf.pages[i]
 			text = page.extract_text()
 			print("Starting page: ", i+1)
