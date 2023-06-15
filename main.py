@@ -4,6 +4,7 @@ from aiReader import speechGeneratorMicrosoft
 from pydub import AudioSegment
 from math import ceil
 import argparse
+import threading
 
 
 # This is the function where each page would be handled to generate audio
@@ -48,19 +49,21 @@ def buildFullAudioFromPDF(file, output):
 			page = pdf.pages[i]
 			text = page.extract_text()
 			print("Starting page: ", i+1)
-			audio = speechGeneratorMicrosoft(text, str(i))
-			audio_sequences.append(audio)
-			print("Done with page ", i+1)
+			# audio = speechGeneratorMicrosoft(text, str(i))
+			thread = threading.Thread(target=speechGeneratorMicrosoft, kwargs={"text": text, "fileName": str(i)})
+			thread.start()
+			# audio_sequences.append(audio)
+			# print("Done with page ", i+1)
 
-	print("Stringing up sequences together")
-	final_sequence = audio_sequences[0]
-	for i in range(1, len(audio_sequences)):
-		final_sequence += audio_sequences[i]
+	# print("Stringing up sequences together")
+	# final_sequence = audio_sequences[0]
+	# for i in range(1, len(audio_sequences)):
+	# 	final_sequence += audio_sequences[i]
 
-	print("Generating final mp3 with background")
-	background = AudioSegment.from_mp3("background/beach_waves.mp3")
-	final = addBackground(final_sequence, background)
-	final.export(output)
+	# print("Generating final mp3 with background")
+	# background = AudioSegment.from_mp3("background/beach_waves.mp3")
+	# final = addBackground(final_sequence, background)
+	# final.export(output)
 
     
 if __name__ == "__main__":

@@ -128,20 +128,21 @@ def speechGeneratorMicrosoft(text, fileName):
         output = torch.cat([output, speech], axis=0)
     
     output = output.cpu().numpy()
+    print("Done with ", fileName)
     # create temporary file path
-    filePath = f"{fileName}.mp3"
-    sf.write(filePath, output, samplerate=16000)
-    audio = AudioSegment.from_mp3(filePath)
-    print("Generating audio segmentation")
-    print({
-        'duration' : audio.duration_seconds,
-        'sample_rate' : audio.frame_rate,
-        'channels' : audio.channels,
-        'sample_width' : audio.sample_width,
-        'frame_count' : audio.frame_count(),
-        'frame_rate' : audio.frame_rate,
-        'frame_width' : audio.frame_width,
-        })
-    audio = speed_change(audio, 0.95)
-    os.remove(filePath)
-    return audio
+    # filePath = f"{fileName}.mp3"
+    # sf.write(filePath, output, samplerate=16000)
+    # audio = AudioSegment.from_mp3(filePath)
+    # print("Generating audio segmentation")
+    # print({
+    #     'duration' : audio.duration_seconds,
+    #     'sample_rate' : audio.frame_rate,
+    #     'channels' : audio.channels,
+    #     'sample_width' : audio.sample_width,
+    #     'frame_count' : audio.frame_count(),
+    #     'frame_rate' : audio.frame_rate,
+    #     'frame_width' : audio.frame_width,
+    #     })
+    # audio = speed_change(audio, 0.95)
+    # os.remove(filePath)
+    # return audio
