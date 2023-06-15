@@ -35,7 +35,7 @@ def ensureComplete(pageMap, lim):
             if pageMap[i] == None:
                 should_break = False
         if should_break:
-            return 
+            return
 
 def buildFullAudioFromPDF(file, output):
 	#Creating a PDF File Object
@@ -70,7 +70,7 @@ def buildFullAudioFromPDF(file, output):
 				print("Starting page: ", i+1)
 				# audio = speechGeneratorMicrosoft(text, str(i))
 				thread = threading.Thread(target=speechGeneratorMicrosoft, kwargs={"text": text, 
-                                                                       			   "fileName": i, 
+                                                                       			   "fileName": j, 
                                                                              	   "pageMap": pageMap})
 				thread.start()
 
