@@ -112,7 +112,7 @@ def speechGeneratorMicrosoft(text, fileName):
     text = cleanText(text)
     inputs = generateInputSequences(text, 450)
     print("Done generating input sequences")
-    output = torch.tensor([]).to(device)
+    # output = torch.tensor([]).to(device)
     
     for data in inputs:
         # generate endoding for the data
@@ -126,13 +126,14 @@ def speechGeneratorMicrosoft(text, fileName):
         speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0).to(device)
         def compute():
             speech = model.generate_speech(input_sequence["input_ids"].to(device), speaker_embeddings, vocoder=vocoder)
-            output = torch.cat([output, speech], axis=0)
+            # output = torch.cat([output, speech], axis=0)
+            print("Done")
         threading.Thread(target=compute).start()
         
         
     
     # output = output.cpu().numpy()
-    print("Done with ", fileName)
+    # print("Done with ", fileName)
     del output
     # create temporary file path
     # filePath = f"{fileName}.mp3"
