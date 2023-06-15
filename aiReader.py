@@ -30,7 +30,7 @@ def speed_change(sound, speed=1.0):
     return sound_with_altered_frame_rate.set_frame_rate(sound.frame_rate)
 
 def SetupModelMicrosoft(model="microsoft_speecht5"):
-    processor = SpeechT5Processor.from_pretrained("microsoft/speecht5_tts").to(device)
+    processor = SpeechT5Processor.from_pretrained("microsoft/speecht5_tts")
     model = SpeechT5ForTextToSpeech.from_pretrained("microsoft/speecht5_tts").to(device)
     vocoder = SpeechT5HifiGan.from_pretrained("microsoft/speecht5_hifigan").to(device)
     return (processor, model, vocoder)
