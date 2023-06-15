@@ -126,6 +126,7 @@ def speechGeneratorMicrosoft(text, fileName):
         speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0).to(device)
         def compute():
             speech = model.generate_speech(input_sequence["input_ids"].to(device), speaker_embeddings, vocoder=vocoder)
+            del speech
             # output = torch.cat([output, speech], axis=0)
             print("Done")
         threading.Thread(target=compute).start()
