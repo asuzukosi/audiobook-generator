@@ -108,7 +108,16 @@ def generateInputSequences(text, step_size=500):
     
     return inputs
 
-
+def processDataAndReturnTensor(data):
+    # generate endoding for the data
+    data = data.strip()
+    data += "."
+    # remove  hyphens to make speaker more fluent for unfamiliar words
+    data = data.replace("'", "") 
+    tensor = processor(text=data, return_tensors="pt")["input_ids"].to(device)
+    return tensor
+    
+    
 def speechGeneratorMicrosoft(text, fileName, pageMap):
     # generate list of input sequences from the text
     print("genrating input sequence")
@@ -119,14 +128,9 @@ def speechGeneratorMicrosoft(text, fileName, pageMap):
     # create list to store concatenated output from individual inputs
     output = torch.tensor([]).to(device)
     # convert all the text data inputs to tensors using the processor and move them to the device
-    inputs = [processor(text=data, return_tensors="pt")["input_ids"].to(device) for data in inputs]
+    inputs = [processDataAndReturnTensor(data) for data in inputs]
     
     for data in inputs:
-        # generate endoding for the data
-        data = data.strip()
-        data += "."
-        # remove  hyphens to make speaker more fluent for unfamiliar words
-        data = data.replace("'", "") 
         # pass input sequence to processor
         speech = model.generate_speech(data, speaker_embeddings, vocoder=vocoder)
         output = torch.cat([output, speech], axis=0)
