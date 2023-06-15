@@ -125,7 +125,7 @@ def speechGeneratorMicrosoft(text, fileName):
         embeddings_dataset = load_dataset("Matthijs/cmu-arctic-xvectors", split="validation")
         speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0).to(device)
         speech = model.generate_speech(input_sequence["input_ids"].to(device), speaker_embeddings, vocoder=vocoder)
-        output = torch([output, speech], axis=0)
+        output = torch.cat([output, speech], axis=0)
     
     output = output.cpu().numpy()
     # create temporary file path
