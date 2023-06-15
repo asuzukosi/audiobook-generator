@@ -119,6 +119,12 @@ def processDataAndReturnTensor(data):
     
     
 def speechGeneratorMicrosoft(text, fileName, pageMap):
+    # create temporary file path
+    filePath = f"{fileName}.mp3"
+    if os.path.exists(filePath):
+        pageMap[fileName] = True
+        print(f"Skipping {fileName}")
+        return
     # generate list of input sequences from the text
     print("genrating input sequence")
     text = cleanText(text)
@@ -140,13 +146,12 @@ def speechGeneratorMicrosoft(text, fileName, pageMap):
         print(f"Finish [{id}/{num_inputs}, {fileName}]")
     
     output = output.cpu().numpy()
-    pageMap[fileName] = output
+    pageMap[fileName] = True
     print("Done with ", fileName)
+    sf.write(filePath, output, samplerate=16000)
+    del output
+    return
     
-    # del output
-    # create temporary file path
-    # filePath = f"{fileName}.mp3"
-    # sf.write(filePath, output, samplerate=16000)
     # audio = AudioSegment.from_mp3(filePath)
     # print("Generating audio segmentation")
     # print({

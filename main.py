@@ -52,7 +52,7 @@ def buildFullAudioFromPDF(file, output):
 	# set all the values on the page mapper to false by default. 
 	# This means that they have not been parsed
 	for i in range(0, pages):
-		pageMap[i] = None
+		pageMap[i] = False
  
 	audio_sequences = np.array([])
 	step_size = 10
@@ -77,15 +77,21 @@ def buildFullAudioFromPDF(file, output):
 			ensureComplete(pageMap, lim)
 			print(f"#### Finished batch {batch}#####")
 
-			# audio_sequences.append(audio)
-			# print("Done with page ", i+1)
    
 	print("Stringing up sequences together")
-	for k, v in pageMap.items():
-		audio_sequences = np.concatenate(audio_sequences, k, axis=1)
+	final_sequence = None
+	for i in range(0, pages):
+		filePath = f"{i}.mp3"
+		audio = AudioSegment.from_mp3(filePath)
+		# if the final sequence is none i.e this is the first audio, 
+  		# then the final sequence should be set to the first audio
+		if final_sequence == None:
+			final_sequence = audio
+		# if final sequence already exists, then add audio to final sequence
+		else:
+			final_sequence += audio
+		
   
-	sf.write(output, audio_sequences, samplerate=16000)
-	final_sequence = AudioSegment.from_mp3(output)
 	print("Geneating audio sequence")
 	print({
         'duration' : final_sequence.duration_seconds,
