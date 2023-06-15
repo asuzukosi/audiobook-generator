@@ -15,6 +15,9 @@ import os
 
 set_seed(555)
 
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+print("Using device : " + device)
+
 def speed_change(sound, speed=1.0):
     # Manually override the frame_rate. This tells the computer how many
     # samples to play per second
@@ -27,9 +30,9 @@ def speed_change(sound, speed=1.0):
     return sound_with_altered_frame_rate.set_frame_rate(sound.frame_rate)
 
 def SetupModelMicrosoft(model="microsoft_speecht5"):
-    processor = SpeechT5Processor.from_pretrained("microsoft/speecht5_tts")
-    model = SpeechT5ForTextToSpeech.from_pretrained("microsoft/speecht5_tts")
-    vocoder = SpeechT5HifiGan.from_pretrained("microsoft/speecht5_hifigan")
+    processor = SpeechT5Processor.from_pretrained("microsoft/speecht5_tts").to(device)
+    model = SpeechT5ForTextToSpeech.from_pretrained("microsoft/speecht5_tts").to(device)
+    vocoder = SpeechT5HifiGan.from_pretrained("microsoft/speecht5_hifigan").to(device)
     return (processor, model, vocoder)
 
 processor, model, vocoder = SetupModelMicrosoft()
@@ -121,7 +124,7 @@ def speechGeneratorMicrosoft(text, fileName):
         # load xvector containing speaker's voice characteristics from a dataset
         embeddings_dataset = load_dataset("Matthijs/cmu-arctic-xvectors", split="validation")
         speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0)
-        speech = model.generate_speech(input_sequence["input_ids"], speaker_embeddings, vocoder=vocoder)
+        speech = model.generate_speech(input_sequence["input_ids"].to(device), speaker_embeddings, vocoder=vocoder)
         output = np.concatenate([output, speech.numpy()], axis=0)
     
     # create temporary file path
