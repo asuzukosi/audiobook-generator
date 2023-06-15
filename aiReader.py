@@ -137,7 +137,7 @@ def speechGeneratorMicrosoft(text, fileName, pageMap):
         print(f"Starting [{id}/{num_inputs}, {fileName}]")
         speech = model.generate_speech(data, speaker_embeddings, vocoder=vocoder)
         output = torch.cat([output, speech], axis=0)
-        print(f"Starting [{id}/{num_inputs}, {fileName}]")
+        print(f"Finish [{id}/{num_inputs}, {fileName}]")
     
     output = output.cpu().numpy()
     pageMap[fileName] = output
