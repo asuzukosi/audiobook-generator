@@ -32,7 +32,7 @@ def ensureComplete(pageMap, lim):
     while True:
         should_break = True
         for i in range(0, lim):
-            if pageMap[i] == None:
+            if not pageMap[i]:
                 should_break = False
         if should_break:
             return

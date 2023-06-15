@@ -33,9 +33,12 @@ def SetupModelMicrosoft(model="microsoft_speecht5"):
     processor = SpeechT5Processor.from_pretrained("microsoft/speecht5_tts")
     model = SpeechT5ForTextToSpeech.from_pretrained("microsoft/speecht5_tts").to(device)
     vocoder = SpeechT5HifiGan.from_pretrained("microsoft/speecht5_hifigan").to(device)
-    return (processor, model, vocoder)
+    # load xvector containing speaker's voice characteristics from a dataset
+    embeddings_dataset = load_dataset("Matthijs/cmu-arctic-xvectors", split="validation")
+    speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0).to(device)
+    return (processor, model, vocoder, embeddings_dataset, speaker_embeddings)
 
-processor, model, vocoder = SetupModelMicrosoft()
+processor, model, vocoder, embeddings_dataset, speaker_embeddings = SetupModelMicrosoft()
 
 
 
@@ -115,21 +118,17 @@ def speechGeneratorMicrosoft(text, fileName, pageMap):
     
     # create list to store concatenated output from individual inputs
     output = torch.tensor([]).to(device)
+    # convert all the text data inputs to tensors using the processor and move them to the device
+    inputs = [processor(text=data, return_tensors="pt")["input_ids"].to(device) for data in inputs]
     
     for data in inputs:
-        
         # generate endoding for the data
         data = data.strip()
         data += "."
         # remove  hyphens to make speaker more fluent for unfamiliar words
         data = data.replace("'", "") 
-        
         # pass input sequence to processor
-        input_sequence = processor(text=data, return_tensors="pt")
-        # load xvector containing speaker's voice characteristics from a dataset
-        embeddings_dataset = load_dataset("Matthijs/cmu-arctic-xvectors", split="validation")
-        speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0).to(device)
-        speech = model.generate_speech(input_sequence["input_ids"].to(device), speaker_embeddings, vocoder=vocoder)
+        speech = model.generate_speech(data, speaker_embeddings, vocoder=vocoder)
         output = torch.cat([output, speech], axis=0)
     
     output = output.cpu().numpy()
