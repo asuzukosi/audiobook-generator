@@ -1,4 +1,4 @@
-## Audiobook generator that uses the Microsoft T5 Speech Transformer model from Huggingface to generate audiobooks from PDFs
+## Audiobook generator that uses the Microsoft T5 Speech Transformer model from Huggingface to generate audiobooks from PDFs (NOTE: still under active development and experimentation, breaking changes were made recently, would not work now)
 
 ![alt text](./images/reading.jpeg)
 
