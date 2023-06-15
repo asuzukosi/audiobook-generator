@@ -127,9 +127,9 @@ def speechGeneratorMicrosoft(text, fileName):
         speech = model.generate_speech(input_sequence["input_ids"].to(device), speaker_embeddings, vocoder=vocoder)
         output = torch.cat([output, speech], axis=0)
     
-    output = output.cpu().numpy()
+    # output = output.cpu().numpy()
     print("Done with ", fileName)
-    del output
+    # del output
     # create temporary file path
     # filePath = f"{fileName}.mp3"
     # sf.write(filePath, output, samplerate=16000)
