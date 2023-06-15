@@ -55,7 +55,7 @@ def buildFullAudioFromPDF(file, output):
 		pageMap[i] = None
  
 	audio_sequences = np.array([])
-	step_size = 1
+	step_size = 5
 	print("Number of pages are: " + str(pages))
  
 	with pdfplumber.open(file) as pdf:
