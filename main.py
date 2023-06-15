@@ -30,12 +30,16 @@ def addBackground(audio, background):
 
 def ensureComplete(pageMap, lim):
     while True:
-        should_break = True
+        # should_break = True
+        print("The current limit is %d" % lim)
         for i in range(0, lim):
             if pageMap[i] == None:
-                should_break = False
-        if should_break:
-            return
+                print("batch should still be running")
+                break
+                # should_break = False
+        # if should_break:
+            
+        #     return
 
 def buildFullAudioFromPDF(file, output):
 	#Creating a PDF File Object
@@ -67,7 +71,7 @@ def buildFullAudioFromPDF(file, output):
 			for j in range(i, lim):
 				page = pdf.pages[j]
 				text = page.extract_text()
-				print("Starting page: ", i+1)
+				print("Starting page: ", j+1)
 				# audio = speechGeneratorMicrosoft(text, str(i))
 				thread = threading.Thread(target=speechGeneratorMicrosoft, kwargs={"text": text, 
                                                                        			   "fileName": j, 
