@@ -134,7 +134,7 @@ def speechGeneratorMicrosoft(text, fileName):
     
     # output = output.cpu().numpy()
     # print("Done with ", fileName)
-    del output
+    # del output
     # create temporary file path
     # filePath = f"{fileName}.mp3"
     # sf.write(filePath, output, samplerate=16000)
