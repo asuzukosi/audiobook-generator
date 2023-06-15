@@ -106,8 +106,7 @@ def generateInputSequences(text, step_size=500):
     return inputs
 
 
-def speechGeneratorMicrosoft(text, fileName):
-    
+def speechGeneratorMicrosoft(text, fileName, pageMap):
     # generate list of input sequences from the text
     print("genrating input sequence")
     text = cleanText(text)
@@ -134,6 +133,7 @@ def speechGeneratorMicrosoft(text, fileName):
         output = torch.cat([output, speech], axis=0)
     
     output = output.cpu().numpy()
+    pageMap[fileName] = output
     print("Done with ", fileName)
     
     # del output

@@ -1,10 +1,12 @@
 import pdfplumber
 import PyPDF2
-from aiReader import speechGeneratorMicrosoft
+from aiReader import speechGeneratorMicrosoft, speed_change
 from pydub import AudioSegment
 from math import ceil
 import argparse
 import threading
+import numpy as np
+import soundfile as sf
 
 
 # This is the function where each page would be handled to generate audio
@@ -26,6 +28,15 @@ def addBackground(audio, background):
     combined = audio.overlay(background)
     return combined
 
+def ensureComplete(pageMap, lim):
+    while True:
+        should_break = True
+        for i in range(0, lim):
+            if pageMap[i] == None:
+                should_break = False
+        if should_break:
+            return 
+
 def buildFullAudioFromPDF(file, output):
 	#Creating a PDF File Object
 	pdfFileObj = open(file, 'rb')
@@ -43,27 +54,54 @@ def buildFullAudioFromPDF(file, output):
 	for i in range(0, pages):
 		pageMap[i] = False
  
-	audio_sequences = []
+	audio_sequences = np.array([])
+	step_size = 25
+	print("Number of pages are: " + str(pages))
+ 
 	with pdfplumber.open(file) as pdf:
-		for i in range(0, 20):
-			page = pdf.pages[i]
-			text = page.extract_text()
-			print("Starting page: ", i+1)
-			# audio = speechGeneratorMicrosoft(text, str(i))
-			thread = threading.Thread(target=speechGeneratorMicrosoft, kwargs={"text": text, "fileName": str(i)})
-			thread.start()
+		batch =  0
+		for i in range(0, pages, step_size):
+			batch += 1
+			print(f"##### Starting batch {batch} ######")
+			lim = min(i+step_size, pages) # the limit for this batch
+			for j in range(i, lim):
+				page = pdf.pages[j]
+				text = page.extract_text()
+				print("Starting page: ", i+1)
+				# audio = speechGeneratorMicrosoft(text, str(i))
+				thread = threading.Thread(target=speechGeneratorMicrosoft, kwargs={"text": text, 
+                                                                       			   "fileName": i, 
+                                                                             	   "pageMap": pageMap})
+				thread.start()
+
+			ensureComplete(pageMap, lim)
+			print(f"#### Finished batch {batch}#####")
+
 			# audio_sequences.append(audio)
 			# print("Done with page ", i+1)
+   
+	print("Stringing up sequences together")
+	for k, v in pageMap.items():
+		audio_sequences = np.concatenate(audio_sequences, k, axis=1)
+  
+	sf.write(output, audio_sequences, samplerate=16000)
+	final_sequence = AudioSegment.from_mp3(output)
+	print("Geneating audio sequence")
+	print({
+        'duration' : final_sequence.duration_seconds,
+        'sample_rate' : final_sequence.frame_rate,
+        'channels' : final_sequence.channels,
+        'sample_width' : final_sequence.sample_width,
+        'frame_count' : final_sequence.frame_count(),
+        'frame_rate' : final_sequence.frame_rate,
+        'frame_width' : final_sequence.frame_width,
+        })
+	final_sequence = speed_change(final_sequence, 0.95)
 
-	# print("Stringing up sequences together")
-	# final_sequence = audio_sequences[0]
-	# for i in range(1, len(audio_sequences)):
-	# 	final_sequence += audio_sequences[i]
-
-	# print("Generating final mp3 with background")
-	# background = AudioSegment.from_mp3("background/beach_waves.mp3")
-	# final = addBackground(final_sequence, background)
-	# final.export(output)
+	print("Generating final mp3 with background")
+	background = AudioSegment.from_mp3("background/beach_waves.mp3")
+	final = addBackground(final_sequence, background)
+	final.export(output)
 
     
 if __name__ == "__main__":
