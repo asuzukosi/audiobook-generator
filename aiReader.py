@@ -112,7 +112,7 @@ def speechGeneratorMicrosoft(text, fileName):
     text = cleanText(text)
     inputs = generateInputSequences(text, 450)
     print("Done generating input sequences")
-    output = np.array([])
+    output = torch.tensor([]).to(device)
     
     for data in inputs:
         # generate endoding for the data
@@ -125,8 +125,9 @@ def speechGeneratorMicrosoft(text, fileName):
         embeddings_dataset = load_dataset("Matthijs/cmu-arctic-xvectors", split="validation")
         speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0).to(device)
         speech = model.generate_speech(input_sequence["input_ids"].to(device), speaker_embeddings, vocoder=vocoder)
-        output = np.concatenate([output, speech.numpy()], axis=0)
+        output = torch([output, speech], axis=0)
     
+    output = output.cpu().numpy()
     # create temporary file path
     filePath = f"{fileName}.mp3"
     sf.write(filePath, output, samplerate=16000)
