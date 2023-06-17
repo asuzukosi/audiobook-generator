@@ -7,7 +7,7 @@ import argparse
 import threading
 import numpy as np
 import soundfile as sf
-
+import os
 
 # This is the function where each page would be handled to generate audio
 def handlePage(page, pageChecker, text):
@@ -37,10 +37,18 @@ def ensureComplete(pageMap, lim):
         if should_break:
             return
 
-def buildFullAudioFromPDF(file, output):
+def buildFullAudioFromPDF(file, output, device):
 	#Creating a PDF File Object
 	pdfFileObj = open(file, 'rb')
-
+ 
+	if device == "gpu":
+		import torch
+		if torch.cuda.is_available() != True:
+			raise Exception("GPU not available, running the application will take long")
+	
+		print("GPU is availabe and ready to go")
+	
+	print("Using {device} to build")
 	# creating a pdf reader object
 	pdfReader = PyPDF2.PdfFileReader(pdfFileObj)
 
@@ -53,9 +61,13 @@ def buildFullAudioFromPDF(file, output):
 	# This means that they have not been parsed
 	for i in range(0, pages):
 		pageMap[i] = False
- 
-	audio_sequences = np.array([])
-	step_size = 10
+    # specify the step size based on what device is being used
+    
+	if device == 'cpu':
+		step_size = 1
+	elif device == 'gpu':
+		step_size = 10
+  
 	print("Number of pages are: " + str(pages))
  
 	with pdfplumber.open(file) as pdf:
@@ -68,12 +80,11 @@ def buildFullAudioFromPDF(file, output):
 				page = pdf.pages[j]
 				text = page.extract_text()
 				print("Starting page: ", j+1)
-				# audio = speechGeneratorMicrosoft(text, str(i))
-				thread = threading.Thread(target=speechGeneratorMicrosoft, kwargs={"text": text, 
-                                                                       			   "fileName": j, 
-                                                                             	   "pageMap": pageMap})
-				thread.start()
-
+				if device == 'cpu':
+					speechGeneratorMicrosoft(text, j, pageMap)
+				elif device == 'gpu':
+					thread = threading.Thread(target=speechGeneratorMicrosoft, kwargs={"text": text, "fileName": j, "pageMap": pageMap})
+					thread.start()
 			ensureComplete(pageMap, lim)
 			print(f"#### Finished batch {batch}#####")
 
@@ -90,6 +101,7 @@ def buildFullAudioFromPDF(file, output):
 		# if final sequence already exists, then add audio to final sequence
 		else:
 			final_sequence += audio
+		# os.remove(filePath)
 		
   
 	print("Geneating audio sequence")
@@ -105,9 +117,17 @@ def buildFullAudioFromPDF(file, output):
 	final_sequence = speed_change(final_sequence, 0.95)
 
 	print("Generating final mp3 with background")
-	background = AudioSegment.from_mp3("background/beach_waves.mp3")
-	final = addBackground(final_sequence, background)
-	final.export(output)
+	# background = AudioSegment.from_mp3("background/beach_waves.mp3")
+	# final = addBackground(final_sequence, background)
+	final_sequence.export(output)
+ 
+	# delete all intermediate sequences
+	print("Deleting intermediate sequences")
+	for i in range(pages):
+		filePath = f"{i}.mp3"
+		os.remove(filePath)
+  
+	print("Done!")
 
     
 if __name__ == "__main__":
@@ -115,5 +135,8 @@ if __name__ == "__main__":
     parser.add_argument("-i", "--input",
                         help="Input pdf file", required=True)
     parser.add_argument("-o", "--output", help="The output mp3 file where the generated audio will be stored", required=True)
+    parser.add_argument("-d", "--device", help="Specify the device to use either cpu or gpu", default="cpu")
     args = parser.parse_args()
-    buildFullAudioFromPDF(args.input, args.output)
+    if args.device not in ["cpu", "gpu"]:
+        raise Exception("Invalid device specified")
+    buildFullAudioFromPDF(args.input, args.output, args.device)

@@ -128,7 +128,7 @@ def speechGeneratorMicrosoft(text, fileName, pageMap):
     # generate list of input sequences from the text
     print("genrating input sequence")
     text = cleanText(text)
-    inputs = generateInputSequences(text, 480)
+    inputs = generateInputSequences(text, 450)
     
     # create list to store concatenated output from individual inputs
     output = torch.tensor([]).to(device)
